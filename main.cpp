@@ -2,25 +2,20 @@
 #include "hal.h"
 
 #include <r2p/Middleware.hpp>
-#include <r2p/node/led.hpp>
 #include <r2p/msg/imu.hpp>
-#include <r2p/msg/std_msgs.hpp>
+
+#include <led/nodes/led.hpp>
 
 #include "l3gd20h.h"
 #include "lsm303d.h"
 #include "madgwick.h"
 
-#ifndef R2P_MODULE_NAME
-#define R2P_MODULE_NAME "IMU"
-#endif
-
 static WORKING_AREA(wa_info, 1024);
 static r2p::RTCANTransport rtcantra(RTCAND1);
 
-RTCANConfig rtcan_config =
-{ 1000000, 100, 60 };
+RTCANConfig rtcan_config = { 1000000, 100, 60 };
 
-r2p::Middleware r2p::Middleware::instance(R2P_MODULE_NAME, "BOOT_"R2P_MODULE_NAME);
+r2p::Middleware r2p::Middleware::instance(MODULE_NAME, "BOOT_"MODULE_NAME);
 
 /*
  * Madgwick node
@@ -29,8 +24,7 @@ extern gyro_data_t gyro_data;
 extern acc_data_t acc_data;
 extern mag_data_t mag_data;
 
-static const SPIConfig spi1cfg =
-{ 0, 0, 0, SPI_CR1_BR_1 | SPI_CR1_CPOL | SPI_CR1_CPHA, 0};
+static const SPIConfig spi1cfg = { 0, 0, 0, SPI_CR1_BR_1 | SPI_CR1_CPOL | SPI_CR1_CPHA , 0};
 
 static const EXTConfig extcfg = { {
 	{ EXT_CH_MODE_DISABLED, NULL },
@@ -75,9 +69,9 @@ msg_t madgwick_node(void *arg) {
 	time = chTimeNow();
 
 	for (;;) {
-		MadgwickAHRSupdate((gyro_data.y / 57.143) * 3.141592 / 180.0, (-gyro_data.x / 57.143) * 3.141592 / 180.0,
+		MadgwickAHRSupdateIMU((gyro_data.y / 57.143) * 3.141592 / 180.0, (-gyro_data.x / 57.143) * 3.141592 / 180.0,
 				(gyro_data.z / 57.143) * 3.141592 / 180.0, acc_data.x / 1000.0, acc_data.y / 1000.0,
-				acc_data.z / 1000.0, mag_data.x, mag_data.y, mag_data.z);
+				acc_data.z / 1000.0);
 		getMadAttitude(&attitude_data);
 
 		r2p::IMUMsg *msgp;
@@ -123,8 +117,10 @@ int main(void) {
 	rtcantra.initialize(rtcan_config);
 	r2p::Middleware::instance.start();
 
-	r2p::ledsub_conf ledsub_conf =
-	{ "led" };
+	r2p::ledpub_conf ledpub_conf = {"led", 1};
+	r2p::Thread::create_heap(NULL, THD_WA_SIZE(512), NORMALPRIO, r2p::ledpub_node, &ledpub_conf);
+
+	r2p::ledsub_conf ledsub_conf = { "led" };
 	r2p::Thread::create_heap(NULL, THD_WA_SIZE(512), NORMALPRIO, r2p::ledsub_node, &ledsub_conf);
 
 	r2p::Thread::create_heap(NULL, THD_WA_SIZE(2048), NORMALPRIO + 3, madgwick_node, NULL);
@@ -136,3 +132,4 @@ int main(void) {
 	return CH_SUCCESS;
 }
 }
+

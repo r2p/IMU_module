@@ -169,19 +169,19 @@ msg_t test_pub_node(void *arg) {
 	pub.publish(msgp);
 	chThdSleepMilliseconds(100);
 
-	adcStart(&ADCD1, NULL);
-	adcConvert(&ADCD1, &adcgrp_cfg, adc_buf, 2);
-	voltage = adc_buf[0] * 3.3 * 2 / 4095;
-
-	while (!pub.alloc(msgp)) chThdSleepMilliseconds(100);
-
-	if ((voltage > 3.1) && (voltage < 3.5)) {
-		sprintf(msgp->data, "Voltage OK (%3.2f V)", voltage);
-	} else {
-		sprintf(msgp->data, "Voltage FAIL (%3.2f V)", voltage);
-	}
-	pub.publish(msgp);
-	chThdSleepMilliseconds(100);
+//	adcStart(&ADCD1, NULL);
+//	adcConvert(&ADCD1, &adcgrp_cfg, adc_buf, 2);
+//	voltage = adc_buf[0] * 3.3 * 2 / 4095;
+//
+//	while (!pub.alloc(msgp)) chThdSleepMilliseconds(100);
+//
+//	if ((voltage > 3.1) && (voltage < 3.5)) {
+//		sprintf(msgp->data, "Voltage OK (%3.2f V)", voltage);
+//	} else {
+//		sprintf(msgp->data, "Voltage FAIL (%3.2f V)", voltage);
+//	}
+//	pub.publish(msgp);
+//	chThdSleepMilliseconds(100);
 
 	spiStart(&SPID1, &spi1cfg);
 	extStart(&EXTD1, &extcfg);
@@ -308,7 +308,7 @@ msg_t test_pub_node(void *arg) {
 
 	if (accmag_fail || gyro_fail || bar_fail) {
 		for (;;) {
-			palTogglePad(LED1_GPIO, LED1);
+			palTogglePad(LED_GPIO, LED_PIN);
 			chThdSleepMilliseconds(100);
 		}
 	}
