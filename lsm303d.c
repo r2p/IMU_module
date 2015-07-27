@@ -202,8 +202,6 @@ static msg_t lsm303_acc_update_thread(void *p) {
 		if (msg == LSM303D_ACC_DATA_READY) {
 			lsm303_acc_update(spip);
 		}
-
-		lsm303_acc_update(spip);
 	}
 
 	return RDY_OK;
