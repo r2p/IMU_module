@@ -10,14 +10,15 @@
 #include "hal.h"
 #include "lps331ap.h"
 
-#define BAR_WA_SIZE    THD_WA_SIZE(256)
+#define BARO_WA_SIZE    THD_WA_SIZE(256)
+#define BARO_DATA_READY                 789
 
 static uint8_t txbuf[2];
 static uint8_t rxbuf[2];
 
-static Thread *bartp = NULL;
+static Thread *barotp = NULL;
 
-bar_data_t bar_data = 0;
+baro_data_t baro_data = { 0, 0 };
 
 /**
  * @brief   Reads a register value.
@@ -38,11 +39,10 @@ int init_lps331ap(SPIDriver *spip) {
 		return -1;
 	}
 
-//	lps331apWriteRegister(spip, L3GD20H_CTRL1, 0x7F);
-//	lps331apWriteRegister(spip, L3GD20H_CTRL2, 0x00);
-//	lps331apWriteRegister(spip, L3GD20H_CTRL3, 0x08);
-//	lps331apWriteRegister(spip, L3GD20H_CTRL4, 0x10);
-//	lps331apWriteRegister(spip, L3GD20H_CTRL5, 0x00);
+	lps331apWriteRegister(spip, LPS331AP_RES_CONF, 0x6A);
+	lps331apWriteRegister(spip, LPS331AP_CTRL_REG1, 0xF0);
+	lps331apWriteRegister(spip, LPS331AP_CTRL_REG1, 0x00);
+	lps331apWriteRegister(spip, LPS331AP_CTRL_REG1, 0x04);
 	spiReleaseBus(spip);
 
 	chThdSleepMilliseconds(250);
@@ -81,9 +81,17 @@ void lps331apWriteRegister(SPIDriver *spip, uint8_t reg, uint8_t value) {
 	case LSP331AP_WHO_AM_I:
 		/* Read only registers cannot be written, the command is ignored.*/
 		return;
+	case LSP331AP_REF_P_XL:
+	case LSP331AP_REF_P_L:
+	case LSP331AP_REF_P_H:
+	case LPS331AP_RES_CONF:
 	case LPS331AP_CTRL_REG1:
 	case LPS331AP_CTRL_REG2:
 	case LPS331AP_CTRL_REG3:
+	case LSP331AP_INT_CFG_REG:
+	case LSP331AP_THS_P_LOW_REG:
+	case LSP331AP_THS_P_HIGH_REG:
+	case LSP331AP_AMP_CTRL:
 		palClearPad(GPIOB, GPIOB_BAR_CS);
 		txbuf[0] = reg;
 		txbuf[1] = value;
@@ -99,76 +107,70 @@ void lps331apWriteRegister(SPIDriver *spip, uint8_t reg, uint8_t value) {
 }
 
 
-//void lps331ap_update(SPIDriver *spip) {
-//	int16_t data[3];
-//	systime_t timestamp;
-//
-//	timestamp = chTimeNow();
-//
-//	//XXX da fare lettura sequenziale!
-//	spiAcquireBus(spip);
-//	data[0] = (lps331apReadRegister(spip, L3GD20H_OUT_X_H) & 0xFF) << 8;
-//	data[0] |= lps331apReadRegister(spip, L3GD20H_OUT_X_L) & 0xFF;
-//	data[1] = (lps331apReadRegister(spip, L3GD20H_OUT_Y_H) & 0xFF) << 8;
-//	data[1] |= lps331apReadRegister(spip, L3GD20H_OUT_Y_L) & 0xFF;
-//	data[2] = (lps331apReadRegister(spip, L3GD20H_OUT_Z_H) & 0xFF) << 8;
-//	data[2] |= lps331apReadRegister(spip, L3GD20H_OUT_Z_L) & 0xFF;
-//	spiReleaseBus(spip);
-//
-//	chSysLock();
-//	gyro_data.t = timestamp;
-//	gyro_data.x = data[0];
-//	gyro_data.y = data[1];
-//	gyro_data.z = data[2];
-//	chSysUnlock();
-//}
-//
-//void lps331ap_drdy_callback(EXTDriver *extp, expchannel_t channel) {
-//	(void) extp;
-//	(void) channel;
-//
-//	/* Wakes up the thread.*/chSysLockFromIsr()
-//	;
-//	if (gyrotp != NULL) {
-//		gyrotp->p_u.rdymsg = (msg_t) BARO_DATA_READY;
-//		chSchReadyI(gyrotp);
-//		gyrotp = NULL;
-//	}
-//	chSysUnlockFromIsr();
-//}
-//
-//static msg_t lps331ap_update_thread(void *p) {
-//	SPIDriver *spip = (SPIDriver *) p;
-//
-//	while (TRUE) {
-//		msg_t msg;
-//
-//		/* Waiting for the IRQ to happen.*/chSysLock()
-//		;
-//		gyrotp = chThdSelf();
-//		chSchGoSleepS(THD_STATE_SUSPENDED);
-//		msg = chThdSelf()->p_u.rdymsg;
-//		chSysUnlock();
-//
-//		/* If data ready, update all axis.*/
-//		if (msg == BARO_DATA_READY) {
-//			lps331ap_update(spip);
-//		}
-//	}
-//
-//	return RDY_OK;
-//}
-//
-//Thread *gyroRun(SPIDriver *spip, tprio_t prio) {
-//	Thread *tp;
-//
-//	if (init_lps331ap(spip) != 0) chSysHalt();
-//
-//	tp = chThdCreateFromHeap(NULL, GYRO_WA_SIZE, prio, lps331ap_update_thread, (void*) spip);
-//	extChannelEnable(&EXTD1, GPIOB_GYRO_INT2);
-//	lps331ap_update(spip);
-//
-//	return tp;
-//}
+void lps331ap_update(SPIDriver *spip) {
+	int16_t data;
+	systime_t timestamp;
+
+	timestamp = chTimeNow();
+
+	//XXX da fare lettura sequenziale!
+	spiAcquireBus(spip);
+	data = (lps331apReadRegister(spip, LSP331AP_PRESS_OUT_H) & 0xFF) << 8;
+	data |= lps331apReadRegister(spip, LSP331AP_PRESS_OUT_L) & 0xFF;
+	spiReleaseBus(spip);
+
+	chSysLock();
+	baro_data.t = timestamp;
+	baro_data.pressure = data;
+	chSysUnlock();
+}
+
+void lps331ap_drdy_callback(EXTDriver *extp, expchannel_t channel) {
+	(void) extp;
+	(void) channel;
+
+	/* Wakes up the thread.*/chSysLockFromIsr()
+	;
+	if (barotp != NULL) {
+		barotp->p_u.rdymsg = (msg_t) BARO_DATA_READY;
+		chSchReadyI(barotp);
+		barotp = NULL;
+	}
+	chSysUnlockFromIsr();
+}
+
+static msg_t lps331ap_update_thread(void *p) {
+	SPIDriver *spip = (SPIDriver *) p;
+
+	while (TRUE) {
+		msg_t msg;
+
+		/* Waiting for the IRQ to happen.*/chSysLock()
+		;
+		barotp = chThdSelf();
+		chSchGoSleepS(THD_STATE_SUSPENDED);
+		msg = chThdSelf()->p_u.rdymsg;
+		chSysUnlock();
+
+		/* If data ready, update all axis.*/
+		if (msg == BARO_DATA_READY) {
+			lps331ap_update(spip);
+		}
+	}
+
+	return RDY_OK;
+}
+
+Thread *baroRun(SPIDriver *spip, tprio_t prio) {
+	Thread *tp;
+
+	if (init_lps331ap(spip) != 0) chSysHalt();
+
+	tp = chThdCreateFromHeap(NULL, BARO_WA_SIZE, prio, lps331ap_update_thread, (void*) spip);
+	extChannelEnable(&EXTD1, GPIOA_BARO_INT1);
+	lps331ap_update(spip);
+
+	return tp;
+}
 
 /** @} */

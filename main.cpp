@@ -3,11 +3,13 @@
 
 #include <r2p/Middleware.hpp>
 #include <r2p/msg/imu.hpp>
+#include <r2p/msg/std_msgs.hpp>
 
 #include <led/nodes/led.hpp>
 
 #include "l3gd20h.h"
 #include "lsm303d.h"
+#include "lps331ap.h"
 #include "madgwick.h"
 
 static WORKING_AREA(wa_info, 1024);
@@ -35,7 +37,7 @@ static const EXTConfig extcfg = { {
 	{ EXT_CH_MODE_DISABLED, NULL },
 	{ EXT_CH_MODE_DISABLED, NULL },
 	{ EXT_CH_MODE_DISABLED, NULL },
-	{ EXT_CH_MODE_DISABLED, NULL },
+	{ EXT_CH_MODE_RISING_EDGE | EXT_MODE_GPIOA, lps331ap_drdy_callback },
 	{ EXT_CH_MODE_DISABLED, NULL },
 	{ EXT_CH_MODE_DISABLED, NULL },
 	{ EXT_CH_MODE_DISABLED, NULL },
@@ -105,6 +107,40 @@ msg_t madgwick_node(void *arg) {
 }
 
 /*
+ * Barometer node
+ */
+extern baro_data_t baro_data;
+
+
+msg_t baro_node(void *arg) {
+	r2p::Node node("barometer");
+	r2p::Publisher<r2p::Int32Msg> baro_pub;
+	systime_t time;
+
+	(void) arg;
+	chRegSetThreadName("barometer");
+
+	baroRun(&SPID1, NORMALPRIO);
+
+	node.advertise(baro_pub, "barometer");
+
+	time = chTimeNow();
+
+	for (;;) {
+		r2p::Int32Msg *msgp;
+		if (baro_pub.alloc(msgp)) {
+			msgp->data = baro_data.pressure;
+
+			baro_pub.publish(*msgp);
+		}
+
+		time += MS2ST(40);
+		chThdSleepUntil(time);
+	}
+	return CH_SUCCESS;
+}
+
+/*
  * Application entry point.
  */
 extern "C" {
@@ -124,6 +160,10 @@ int main(void) {
 	r2p::Thread::create_heap(NULL, THD_WA_SIZE(512), NORMALPRIO, r2p::ledsub_node, &ledsub_conf);
 
 	r2p::Thread::create_heap(NULL, THD_WA_SIZE(2048), NORMALPRIO + 3, madgwick_node, NULL);
+
+	r2p::Thread::sleep(r2p::Time::ms(500));
+
+	r2p::Thread::create_heap(NULL, THD_WA_SIZE(2048), NORMALPRIO + 1, baro_node, NULL);
 
 	for (;;) {
 		r2p::Thread::sleep(r2p::Time::ms(500));

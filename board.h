@@ -63,7 +63,7 @@
 #define GPIOA_SPI_SCK               5
 #define GPIOA_SPI_MISO              6
 #define GPIOA_SPI_MOSI              7
-#define GPIOA_BAR_INT1              8
+#define GPIOA_BARO_INT1             8
 #define GPIOA_GPS_RX                9
 #define GPIOA_GPS_TX                10
 #define GPIOA_PIN11                 11
@@ -207,7 +207,7 @@
                                      PIN_MODE_ALTERNATE(GPIOA_SPI_SCK) |    \
                                      PIN_MODE_ALTERNATE(GPIOA_SPI_MISO) |   \
                                      PIN_MODE_ALTERNATE(GPIOA_SPI_MOSI) |   \
-                                     PIN_MODE_INPUT(GPIOA_BAR_INT1) |       \
+                                     PIN_MODE_INPUT(GPIOA_BARO_INT1) |       \
                                      PIN_MODE_ALTERNATE(GPIOA_GPS_RX) |     \
                                      PIN_MODE_ALTERNATE(GPIOA_GPS_TX) |     \
                                      PIN_MODE_INPUT(GPIOA_PIN11) |          \
@@ -223,7 +223,7 @@
                                      PIN_OTYPE_PUSHPULL(GPIOA_SPI_SCK) |    \
                                      PIN_OTYPE_PUSHPULL(GPIOA_SPI_MISO) |   \
                                      PIN_OTYPE_PUSHPULL(GPIOA_SPI_MOSI) |   \
-                                     PIN_OTYPE_PUSHPULL(GPIOA_BAR_INT1) |   \
+                                     PIN_OTYPE_PUSHPULL(GPIOA_BARO_INT1) |   \
                                      PIN_OTYPE_PUSHPULL(GPIOA_GPS_RX) |     \
                                      PIN_OTYPE_PUSHPULL(GPIOA_GPS_TX) |     \
                                      PIN_OTYPE_PUSHPULL(GPIOA_PIN11) |      \
@@ -239,7 +239,7 @@
                                      PIN_OSPEED_50M(GPIOA_SPI_SCK) |        \
                                      PIN_OSPEED_100M(GPIOA_SPI_MISO) |      \
                                      PIN_OSPEED_100M(GPIOA_SPI_MOSI) |      \
-                                     PIN_OSPEED_100M(GPIOA_BAR_INT1) |      \
+                                     PIN_OSPEED_100M(GPIOA_BARO_INT1) |      \
                                      PIN_OSPEED_100M(GPIOA_GPS_RX) |        \
                                      PIN_OSPEED_100M(GPIOA_GPS_TX) |        \
                                      PIN_OSPEED_2M(GPIOA_PIN11) |           \
@@ -255,7 +255,7 @@
                                      PIN_PUPDR_FLOATING(GPIOA_SPI_SCK) |    \
                                      PIN_PUPDR_FLOATING(GPIOA_SPI_MISO) |   \
                                      PIN_PUPDR_FLOATING(GPIOA_SPI_MOSI) |   \
-                                     PIN_PUPDR_PULLUP(GPIOA_BAR_INT1) |     \
+                                     PIN_PUPDR_PULLUP(GPIOA_BARO_INT1) |     \
                                      PIN_PUPDR_FLOATING(GPIOA_GPS_RX) |     \
                                      PIN_PUPDR_FLOATING(GPIOA_GPS_TX) |     \
                                      PIN_PUPDR_PULLUP(GPIOA_PIN11) |        \
@@ -271,7 +271,7 @@
                                      PIN_ODR_HIGH(GPIOA_SPI_SCK) |          \
                                      PIN_ODR_HIGH(GPIOA_SPI_MISO) |         \
                                      PIN_ODR_HIGH(GPIOA_SPI_MOSI) |         \
-                                     PIN_ODR_HIGH(GPIOA_BAR_INT1) |         \
+                                     PIN_ODR_HIGH(GPIOA_BARO_INT1) |         \
                                      PIN_ODR_HIGH(GPIOA_GPS_RX) |           \
                                      PIN_ODR_HIGH(GPIOA_GPS_TX) |           \
                                      PIN_ODR_HIGH(GPIOA_PIN11) |            \
@@ -287,7 +287,7 @@
                                      PIN_AFIO_AF(GPIOA_SPI_SCK, 5) |        \
                                      PIN_AFIO_AF(GPIOA_SPI_MISO, 5) |       \
                                      PIN_AFIO_AF(GPIOA_SPI_MOSI, 5))
-#define VAL_GPIOA_AFRH              (PIN_AFIO_AF(GPIOA_BAR_INT1, 0) |       \
+#define VAL_GPIOA_AFRH              (PIN_AFIO_AF(GPIOA_BARO_INT1, 0) |       \
                                      PIN_AFIO_AF(GPIOA_GPS_RX, 7) |         \
                                      PIN_AFIO_AF(GPIOA_GPS_TX, 7) |         \
                                      PIN_AFIO_AF(GPIOA_PIN11, 0) |          \
