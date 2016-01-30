@@ -18,7 +18,7 @@ static uint8_t rxbuf[2];
 
 static Thread *barotp = NULL;
 
-baro_data_t baro_data = { 0, 0 };
+baro_data_t baro_data = { 0, 0, 0};
 
 /**
  * @brief   Reads a register value.
@@ -39,10 +39,11 @@ int init_lps331ap(SPIDriver *spip) {
 		return -1;
 	}
 
-	lps331apWriteRegister(spip, LPS331AP_RES_CONF, 0x6A);
-	lps331apWriteRegister(spip, LPS331AP_CTRL_REG1, 0xF0);
 	lps331apWriteRegister(spip, LPS331AP_CTRL_REG1, 0x00);
-	lps331apWriteRegister(spip, LPS331AP_CTRL_REG1, 0x04);
+	lps331apWriteRegister(spip, LPS331AP_RES_CONF, 0x6A);
+	lps331apWriteRegister(spip, LPS331AP_CTRL_REG2, 0x00);
+	lps331apWriteRegister(spip, LPS331AP_CTRL_REG3, 0x04);
+	lps331apWriteRegister(spip, LPS331AP_CTRL_REG1, 0xF8);
 	spiReleaseBus(spip);
 
 	chThdSleepMilliseconds(250);
@@ -59,11 +60,11 @@ int init_lps331ap(SPIDriver *spip) {
  */
 uint8_t lps331apReadRegister(SPIDriver *spip, uint8_t reg) {
 
-	palClearPad(GPIOB, GPIOB_BAR_CS);
+	palClearPad(GPIOB, GPIOB_BARO_CS);
 	txbuf[0] = 0x80 | reg;
 	txbuf[1] = 0xff;
 	spiExchange(spip, 2, txbuf, rxbuf);
-	palSetPad(GPIOB, GPIOB_BAR_CS);
+	palSetPad(GPIOB, GPIOB_BARO_CS);
 	return rxbuf[1];
 }
 
@@ -92,11 +93,11 @@ void lps331apWriteRegister(SPIDriver *spip, uint8_t reg, uint8_t value) {
 	case LSP331AP_THS_P_LOW_REG:
 	case LSP331AP_THS_P_HIGH_REG:
 	case LSP331AP_AMP_CTRL:
-		palClearPad(GPIOB, GPIOB_BAR_CS);
+		palClearPad(GPIOB, GPIOB_BARO_CS);
 		txbuf[0] = reg;
 		txbuf[1] = value;
 		spiSend(spip, 2, txbuf);
-		palSetPad(GPIOB, GPIOB_BAR_CS);
+		palSetPad(GPIOB, GPIOB_BARO_CS);
 		break;
 	default:
 		/* Reserved register must not be written, according to the datasheet
@@ -108,20 +109,25 @@ void lps331apWriteRegister(SPIDriver *spip, uint8_t reg, uint8_t value) {
 
 
 void lps331ap_update(SPIDriver *spip) {
-	int16_t data;
+	int32_t pressure;
+	int16_t temperature;
 	systime_t timestamp;
 
 	timestamp = chTimeNow();
 
 	//XXX da fare lettura sequenziale!
 	spiAcquireBus(spip);
-	data = (lps331apReadRegister(spip, LSP331AP_PRESS_OUT_H) & 0xFF) << 8;
-	data |= lps331apReadRegister(spip, LSP331AP_PRESS_OUT_L) & 0xFF;
+	pressure = lps331apReadRegister(spip, LSP331AP_PRESS_OUT_H) << 16;
+	pressure |= lps331apReadRegister(spip, LSP331AP_PRESS_OUT_L) << 8;
+	pressure |= lps331apReadRegister(spip, LSP331AP_PRESS_POUT_XL);
+	temperature = lps331apReadRegister(spip, LSP331AP_TEMP_OUT_H) << 8;
+	temperature |= lps331apReadRegister(spip, LSP331AP_TEMP_OUT_L);
 	spiReleaseBus(spip);
 
 	chSysLock();
 	baro_data.t = timestamp;
-	baro_data.pressure = data;
+	baro_data.pressure = pressure / 4096.0;
+	baro_data.temperature = 42.5 + (temperature / 480.0);
 	chSysUnlock();
 }
 
@@ -145,6 +151,7 @@ static msg_t lps331ap_update_thread(void *p) {
 	while (TRUE) {
 		msg_t msg;
 
+#if 1
 		/* Waiting for the IRQ to happen.*/chSysLock()
 		;
 		barotp = chThdSelf();
@@ -156,6 +163,10 @@ static msg_t lps331ap_update_thread(void *p) {
 		if (msg == BARO_DATA_READY) {
 			lps331ap_update(spip);
 		}
+# else
+		chThdSleepMilliseconds(100);
+		lps331ap_update(spip);
+#endif
 	}
 
 	return RDY_OK;

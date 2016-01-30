@@ -29,7 +29,7 @@
 #define LSP331AP_THS_P_LOW_REG		0x25
 #define LSP331AP_THS_P_HIGH_REG		0x26
 #define LSP331AP_STATUS_REG			0x27
-#define LSP331AP_PRESS_POUT_XL_REG	0x28
+#define LSP331AP_PRESS_POUT_XL		0x28
 #define LSP331AP_PRESS_OUT_L		0x29
 #define LSP331AP_PRESS_OUT_H		0x2A
 #define LSP331AP_TEMP_OUT_L			0x2B
@@ -40,7 +40,8 @@
 
 typedef struct {
   uint32_t t;
-  int16_t pressure;
+  float pressure;
+  float temperature;
 } baro_data_t;
 
 #ifdef __cplusplus

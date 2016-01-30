@@ -84,8 +84,8 @@
 #define GPIOB_CAN_TX                9
 #define GPIOB_PIN10                 10
 #define GPIOB_PIN11                 11
-#define GPIOB_BAR_CS                12
-#define GPIOB_BAR_INT2              13
+#define GPIOB_BARO_CS                12
+#define GPIOB_BARO_INT2              13
 #define GPIOB_GPS_AUX1              14
 #define GPIOB_GPS_AUX2              15
 
@@ -190,7 +190,7 @@
  * PA5  - SPI_SCK                   (alternate 5).
  * PA6  - SPI_MISO                  (alternate 5).
  * PA7  - SPI_MOSI                  (alternate 5).
- * PA8  - BAR_INT1                  (input pullup).
+ * PA8  - BARO_INT1                  (input pullup).
  * PA9  - GPS_RX                    (alternate 7).
  * PA10 - GPS_TX                    (alternate 7).
  * PA11 - PIN11                     (input pullup).
@@ -311,8 +311,8 @@
  * PB9  - CAN_TX                    (alternate 9).
  * PB10 - PIN10                     (input pullup).
  * PB11 - PIN11                     (input pullup).
- * PB12 - BAR_CS                    (output pushpull maximum).
- * PB13 - BAR_INT2                  (input pullup).
+ * PB12 - BARO_CS                    (output pushpull maximum).
+ * PB13 - BARO_INT2                  (input pullup).
  * PB14 - GPS_AUX1                  (input pullup).
  * PB15 - GPS_AUX2                  (input pullup).
  */
@@ -328,8 +328,8 @@
                                      PIN_MODE_ALTERNATE(GPIOB_CAN_TX) |     \
                                      PIN_MODE_INPUT(GPIOB_PIN10) |          \
                                      PIN_MODE_INPUT(GPIOB_PIN11) |          \
-                                     PIN_MODE_OUTPUT(GPIOB_BAR_CS) |        \
-                                     PIN_MODE_INPUT(GPIOB_BAR_INT2) |       \
+                                     PIN_MODE_OUTPUT(GPIOB_BARO_CS) |        \
+                                     PIN_MODE_INPUT(GPIOB_BARO_INT2) |       \
                                      PIN_MODE_INPUT(GPIOB_GPS_AUX1) |       \
                                      PIN_MODE_INPUT(GPIOB_GPS_AUX2))
 #define VAL_GPIOB_OTYPER            (PIN_OTYPE_PUSHPULL(GPIOB_GYRO_INT1) |  \
@@ -344,8 +344,8 @@
                                      PIN_OTYPE_PUSHPULL(GPIOB_CAN_TX) |     \
                                      PIN_OTYPE_PUSHPULL(GPIOB_PIN10) |      \
                                      PIN_OTYPE_PUSHPULL(GPIOB_PIN11) |      \
-                                     PIN_OTYPE_PUSHPULL(GPIOB_BAR_CS) |     \
-                                     PIN_OTYPE_PUSHPULL(GPIOB_BAR_INT2) |   \
+                                     PIN_OTYPE_PUSHPULL(GPIOB_BARO_CS) |     \
+                                     PIN_OTYPE_PUSHPULL(GPIOB_BARO_INT2) |   \
                                      PIN_OTYPE_PUSHPULL(GPIOB_GPS_AUX1) |   \
                                      PIN_OTYPE_PUSHPULL(GPIOB_GPS_AUX2))
 #define VAL_GPIOB_OSPEEDR           (PIN_OSPEED_100M(GPIOB_GYRO_INT1) |     \
@@ -360,8 +360,8 @@
                                      PIN_OSPEED_100M(GPIOB_CAN_TX) |        \
                                      PIN_OSPEED_2M(GPIOB_PIN10) |           \
                                      PIN_OSPEED_2M(GPIOB_PIN11) |           \
-                                     PIN_OSPEED_100M(GPIOB_BAR_CS) |        \
-                                     PIN_OSPEED_100M(GPIOB_BAR_INT2) |      \
+                                     PIN_OSPEED_100M(GPIOB_BARO_CS) |        \
+                                     PIN_OSPEED_100M(GPIOB_BARO_INT2) |      \
                                      PIN_OSPEED_100M(GPIOB_GPS_AUX1) |      \
                                      PIN_OSPEED_100M(GPIOB_GPS_AUX2))
 #define VAL_GPIOB_PUPDR             (PIN_PUPDR_PULLUP(GPIOB_GYRO_INT1) |    \
@@ -376,8 +376,8 @@
                                      PIN_PUPDR_FLOATING(GPIOB_CAN_TX) |     \
                                      PIN_PUPDR_PULLUP(GPIOB_PIN10) |        \
                                      PIN_PUPDR_PULLUP(GPIOB_PIN11) |        \
-                                     PIN_PUPDR_FLOATING(GPIOB_BAR_CS) |     \
-                                     PIN_PUPDR_PULLUP(GPIOB_BAR_INT2) |     \
+                                     PIN_PUPDR_FLOATING(GPIOB_BARO_CS) |     \
+                                     PIN_PUPDR_PULLUP(GPIOB_BARO_INT2) |     \
                                      PIN_PUPDR_PULLUP(GPIOB_GPS_AUX1) |     \
                                      PIN_PUPDR_PULLUP(GPIOB_GPS_AUX2))
 #define VAL_GPIOB_ODR               (PIN_ODR_HIGH(GPIOB_GYRO_INT1) |        \
@@ -392,8 +392,8 @@
                                      PIN_ODR_HIGH(GPIOB_CAN_TX) |           \
                                      PIN_ODR_HIGH(GPIOB_PIN10) |            \
                                      PIN_ODR_HIGH(GPIOB_PIN11) |            \
-                                     PIN_ODR_HIGH(GPIOB_BAR_CS) |           \
-                                     PIN_ODR_HIGH(GPIOB_BAR_INT2) |         \
+                                     PIN_ODR_HIGH(GPIOB_BARO_CS) |           \
+                                     PIN_ODR_HIGH(GPIOB_BARO_INT2) |         \
                                      PIN_ODR_HIGH(GPIOB_GPS_AUX1) |         \
                                      PIN_ODR_HIGH(GPIOB_GPS_AUX2))
 #define VAL_GPIOB_AFRL              (PIN_AFIO_AF(GPIOB_GYRO_INT1, 0) |      \
@@ -408,8 +408,8 @@
                                      PIN_AFIO_AF(GPIOB_CAN_TX, 9) |         \
                                      PIN_AFIO_AF(GPIOB_PIN10, 0) |          \
                                      PIN_AFIO_AF(GPIOB_PIN11, 0) |          \
-                                     PIN_AFIO_AF(GPIOB_BAR_CS, 0) |         \
-                                     PIN_AFIO_AF(GPIOB_BAR_INT2, 0) |       \
+                                     PIN_AFIO_AF(GPIOB_BARO_CS, 0) |         \
+                                     PIN_AFIO_AF(GPIOB_BARO_INT2, 0) |       \
                                      PIN_AFIO_AF(GPIOB_GPS_AUX1, 0) |       \
                                      PIN_AFIO_AF(GPIOB_GPS_AUX2, 0))
 

@@ -114,7 +114,7 @@ extern baro_data_t baro_data;
 
 msg_t baro_node(void *arg) {
 	r2p::Node node("barometer");
-	r2p::Publisher<r2p::Int32Msg> baro_pub;
+	r2p::Publisher<r2p::Float32Msg> baro_pub;
 	systime_t time;
 
 	(void) arg;
@@ -127,7 +127,7 @@ msg_t baro_node(void *arg) {
 	time = chTimeNow();
 
 	for (;;) {
-		r2p::Int32Msg *msgp;
+		r2p::Float32Msg *msgp;
 		if (baro_pub.alloc(msgp)) {
 			msgp->data = baro_data.pressure;
 
