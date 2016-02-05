@@ -7,7 +7,7 @@ MODULE_NAME = uDC_module
 
 # Compiler options here.
 ifeq ($(USE_OPT),)
-  USE_OPT = -O0 -ggdb -fomit-frame-pointer -falign-functions=16
+  USE_OPT = -O0 -ggdb -fomit-frame-pointer -falign-functions=16 -std=c11
 endif
 
 # C specific options here (added to USE_OPT).
@@ -113,12 +113,14 @@ CSRC = $(PORTSRC) \
        $(MODULE_PATH)/l3gd20h.c \
        $(MODULE_PATH)/lps331ap.c \
        $(MODULE_PATH)/lsm303d.c \
-       $(MODULE_PATH)/madgwick.c
+       $(MODULE_PATH)/madgwick.c \
+       $(MODULE_PATH)/lib/minmea/minmea.c
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
 CPPSRC = $(MW_CPPSRC) \
          chnew.cpp \
+         gps.cpp \
          $(PACKAGES_CPPSRC) \
          $(PRJ_CPPSRC)
 
