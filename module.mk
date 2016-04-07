@@ -7,7 +7,7 @@ MODULE_NAME = uDC_module
 
 # Compiler options here.
 ifeq ($(USE_OPT),)
-  USE_OPT = -O0 -ggdb -fomit-frame-pointer -falign-functions=16 -std=c11
+  USE_OPT = -O0 -ggdb -fomit-frame-pointer -falign-functions=16 -std=gnu11
 endif
 
 # C specific options here (added to USE_OPT).
@@ -120,7 +120,7 @@ CSRC = $(PORTSRC) \
 # setting.
 CPPSRC = $(MW_CPPSRC) \
          chnew.cpp \
-         gps.cpp \
+#         gps.cpp \
          $(PACKAGES_CPPSRC) \
          $(PRJ_CPPSRC)
 
@@ -193,6 +193,10 @@ CWARN = -Wall -Wextra -Wstrict-prototypes
 # Define C++ warning options here
 CPPWARN = -Wall -Wextra
 
+# C flags
+CSTANDARD = -std=gnu99
+CFLAGS += $(CSTANDARD)
+
 #
 # Compiler settings
 ##############################################################################
@@ -202,7 +206,7 @@ CPPWARN = -Wall -Wextra
 #
 
 # List all default C defines here, like -D_DEBUG=1
-DDEFS = -DMODULE_NAME="\"$(MODULE_NAME)\""
+DDEFS = -DMODULE_NAME="\"$(MODULE_NAME)\"" 
 
 # List all default ASM defines here, like -D_DEBUG=1
 DADEFS =
