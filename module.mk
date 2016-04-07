@@ -120,7 +120,7 @@ CSRC = $(PORTSRC) \
 # setting.
 CPPSRC = $(MW_CPPSRC) \
          chnew.cpp \
-#         gps.cpp \
+         gps.cpp \
          $(PACKAGES_CPPSRC) \
          $(PRJ_CPPSRC)
 
